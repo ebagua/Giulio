@@ -4,39 +4,33 @@ import pandas as pd
 import calendar
 from datetime import date, timedelta
 
-# 🌴 Tema visivo vacanziero
-def sfondo_tema_vacanza():
-    st.markdown("""
-        <style>
-        .stApp {
-            background-image: url("https://i.imgur.com/MTrvF7S.jpg");
-            background-size: cover;
-            background-attachment: fixed;
-        }
-        .block-container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 15px;
-            padding: 2rem;
-        }
-        h1, h2, h3, label, .stNumberInput label, .stSelectbox label, .stSlider label {
-            color: #FFE600 !important;
-        }
-        .stDataFrame, .stMetric {
-            background-color: rgba(255,255,255,0.9);
-        }
-        footer {
-            visibility: hidden;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
 # 📄 Config pagina
 st.set_page_config(page_title="Casa Vacanze Pietra Ligure", page_icon="🌴", layout="wide")
-sfondo_tema_vacanza()
+
+# 🌴 Tema visivo vacanziero (compatibile con Streamlit)
+st.markdown("""
+    <style>
+    body {
+        background-color: #f0f8ff;
+        background-image: url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
+        background-size: cover;
+        background-attachment: fixed;
+    }
+    .main {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 2rem;
+        border-radius: 1rem;
+    }
+    h1, h3 {
+        color: #006699;
+        text-align: center;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # 🌞 Titolo
-st.markdown("<h1 style='text-align: center; color: #FFE600;'>🌴 Casa Vacanza – Via Rocca Crovara, Pietra Ligure</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: white;'>Calcola il prezzo dinamico per ogni giorno e visualizza il tuo guadagno netto</h3>", unsafe_allow_html=True)
+st.markdown("<h1>🌴 Casa Vacanza – Via Rocca Crovara, Pietra Ligure</h1>", unsafe_allow_html=True)
+st.markdown("<h3>Calcola il prezzo dinamico e visualizza il tuo guadagno netto</h3>", unsafe_allow_html=True)
 
 # 🏷️ Impostazioni
 prezzo_base = st.number_input("💶 Prezzo base per notte (€)", value=150)
@@ -103,4 +97,4 @@ col1.metric("💰 Guadagno Netto Stimato (disponibili)", f"{totale:.2f} €")
 col2.metric("🔒 Già Prenotati", f"{prenotati_count:.2f} €")
 
 # 👣 Footer
-st.markdown("<hr><center style='color:white;'>🏖️ Realizzato per la tua casa vacanza a Pietra Ligure | via Rocca Crovara</center>", unsafe_allow_html=True)
+st.markdown("<hr><center style='color:#006699;'>🏖️ Realizzato per la tua casa vacanza a Pietra Ligure | via Rocca Crovara</center>", unsafe_allow_html=True)
