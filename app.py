@@ -1,100 +1,119 @@
-
 import streamlit as st
 import pandas as pd
 import calendar
 from datetime import date, timedelta
 
-# 📄 Config pagina
-st.set_page_config(page_title="Casa Vacanze Pietra Ligure", page_icon="🌴", layout="wide")
+# Configurazione pagina
+st.set_page_config(page_title="Affitti Pietra Ligure", page_icon="🏖️", layout="wide")
 
-# 🌴 Tema visivo vacanziero (compatibile con Streamlit)
+# Stile personalizzato (tema vacanza con palme)
 st.markdown("""
     <style>
     body {
         background-color: #f0f8ff;
-        background-image: url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
-        background-size: cover;
-        background-attachment: fixed;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .main {
-        background-color: rgba(255, 255, 255, 0.85);
+        background-color: rgba(255, 255, 255, 0.9);
         padding: 2rem;
         border-radius: 1rem;
+        max-width: 900px;
+        margin: auto;
     }
-    h1, h3 {
-        color: #006699;
+    h1, h2, h3 {
+        color: #008080;
         text-align: center;
+    }
+    .st-bd {
+        font-size: 18px;
+    }
+    .css-18e3th9 {
+        padding-top: 0;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 🌞 Titolo
-st.markdown("<h1>🌴 Casa Vacanza – Via Rocca Crovara, Pietra Ligure</h1>", unsafe_allow_html=True)
-st.markdown("<h3>Calcola il prezzo dinamico e visualizza il tuo guadagno netto</h3>", unsafe_allow_html=True)
+# Titolo e descrizione
+st.markdown("<div class='main'>", unsafe_allow_html=True)
+st.markdown("<h1>🏖️ Affitti Brevi - Pietra Ligure</h1>", unsafe_allow_html=True)
+st.markdown("<h3>Gestione Prezzi, Guadagni e Prenotazioni</h3>", unsafe_allow_html=True)
 
-# 🏷️ Impostazioni
-prezzo_base = st.number_input("💶 Prezzo base per notte (€)", value=150)
-mese_selezionato = st.selectbox("🗓️ Mese", list(calendar.month_name)[1:], index=date.today().month - 1)
-anno = date.today().year
+# Prezzo base e mese
+prezzo_base = st.number_input("💶 Prezzo base per notte (€)", value=140)
+mese_selezionato = st.selectbox("📆 Seleziona il mese", list(calendar.month_name)[1:], index=date.today().month - 1)
+anno_corrente = date.today().year
 
-# 🗓️ Giorni in italiano
+# Giorni in italiano
 giorni_settimana_it = {
     'Monday': 'Lunedì', 'Tuesday': 'Martedì', 'Wednesday': 'Mercoledì',
     'Thursday': 'Giovedì', 'Friday': 'Venerdì', 'Saturday': 'Sabato', 'Sunday': 'Domenica'
 }
 
-# 🎉 Festività italiane
+# Festività principali italiane
 festivita = ["01/01", "06/01", "25/04", "01/05", "02/06", "15/08", "01/11", "08/12", "25/12", "26/12"]
 
-# 📅 Lista giorni
-mese_numero = list(calendar.month_name).index(mese_selezionato)
-num_giorni = calendar.monthrange(anno, mese_numero)[1]
-date_mese = [date(anno, mese_numero, g) for g in range(1, num_giorni + 1)]
+# Costruisci il calendario
+mese_num = list(calendar.month_name).index(mese_selezionato)
+num_giorni = calendar.monthrange(anno_corrente, mese_num)[1]
+giorni = [date(anno_corrente, mese_num, g) for g in range(1, num_giorni + 1)]
 
-# 📌 Prenotazioni
-prenotati = st.multiselect("📌 Seleziona le date già prenotate", date_mese, format_func=lambda d: d.strftime("%d %B %Y"))
+# Date prenotate
+prenotati = st.multiselect("🔴 Seleziona le date già prenotate", giorni, format_func=lambda d: d.strftime("%d %B %Y"))
 
-# 📊 Tabella prezzi
-records = []
-for giorno in date_mese:
+# Tabella dati
+dati = []
+
+for giorno in giorni:
     nome_giorno = giorni_settimana_it[giorno.strftime('%A')]
-    giorno_label = f"{nome_giorno} {giorno.day:02d} {mese_selezionato}"
+    data_label = f"{nome_giorno} {giorno.day:02d} {mese_selezionato}"
 
     prezzo = prezzo_base
 
+    # Aumento weekend
     if nome_giorno in ["Venerdì", "Sabato"]:
         prezzo *= 1.2
 
+    # Aumento festività
     if giorno.strftime("%d/%m") in festivita:
         prezzo *= 1.3
 
-    durata = st.slider(f"📆 Soggiorno dal {giorno.day:02d}/{mese_numero:02d}", 1, 14, 1, key=str(giorno))
-    if durata >= 7:
+    # Sconto per soggiorno lungo (da 7 giorni in su)
+    soggiorno = st.slider(f"Soggiorno da {giorno.day:02d}/{mese_num:02d}", 1, 14, 1, key=str(giorno))
+    if soggiorno >= 7:
         prezzo *= 0.9
 
     prezzo = round(prezzo, 2)
-    guadagno_netto = round(prezzo * 0.75, 2)
+    netto = round(prezzo * 0.75, 2)  # 25% trattenuto da Booking circa
 
-    records.append({
-        "Data": giorno_label,
+    dati.append({
+        "Data": data_label,
         "Prezzo (€)": prezzo,
-        "Guadagno Netto (~€)": guadagno_netto,
+        "Guadagno Netto (~€)": netto,
         "Prenotato": "✅" if giorno in prenotati else ""
     })
 
-# 📋 Mostra tabella
-df = pd.DataFrame(records)
+df = pd.DataFrame(dati)
 st.dataframe(df, use_container_width=True)
 
-# 📈 Totali
-totale = df[df["Prenotato"] != "✅"]["Guadagno Netto (~€)"].sum()
-prenotati_count = df[df["Prenotato"] == "✅"]["Guadagno Netto (~€)"].sum()
+# Riepilogo
+tot_netto = df[df["Prenotato"] != "✅"]["Guadagno Netto (~€)"].sum()
+tot_prenotato = df[df["Prenotato"] == "✅"]["Guadagno Netto (~€)"].sum()
 
 st.markdown("---")
-st.subheader("📈 Riepilogo")
-col1, col2 = st.columns(2)
-col1.metric("💰 Guadagno Netto Stimato (disponibili)", f"{totale:.2f} €")
-col2.metric("🔒 Già Prenotati", f"{prenotati_count:.2f} €")
+st.subheader("📊 Riepilogo Totale")
+c1, c2 = st.columns(2)
+c1.metric("🟢 Guadagno Netto Stimato (libero)", f"{tot_netto:.2f} €")
+c2.metric("🔴 Guadagno Netto Prenotato", f"{tot_prenotato:.2f} €")
 
-# 👣 Footer
-st.markdown("<hr><center style='color:#006699;'>🏖️ Realizzato per la tua casa vacanza a Pietra Ligure | via Rocca Crovara</center>", unsafe_allow_html=True)
+# Calendario visivo con date prenotate
+st.markdown("---")
+st.subheader("🗓️ Calendario Prenotazioni")
+
+calendar_table = pd.DataFrame({
+    "Data": [d.strftime("%d/%m/%Y") for d in giorni],
+    "Prenotato": ["🔴" if d in prenotati else "🟢" for d in giorni]
+})
+
+st.dataframe(calendar_table, use_container_width=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
